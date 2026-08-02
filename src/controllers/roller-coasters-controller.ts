@@ -42,11 +42,11 @@ export default class RollerCoastersController {
 
   @Get('/search')
   public async searchCoasterRoute(req: Request, res: Response) {
-    const { q = '' } = req.query;
+    const { name = '', parkName = '' } = req.query;
 
-    if (!q) res.status(400).json([]);
+    if (!name) res.status(400).json([]);
 
-    const matchedCoasters: RollerCoaster[] = await this._rollercoasterService.searchCoasters(q as string);
+    const matchedCoasters: RollerCoaster[] = await this._rollercoasterService.searchCoasters(name as string, parkName as string);
 
     res.status(200).json({ coasters: matchedCoasters, totalMatch: matchedCoasters.length });
   }
