@@ -2,7 +2,7 @@ import { __COASTERS_DB_FILENAME__ } from '@app/constants';
 import JsonDB from '@app/db';
 import { PaginatedResponse } from '@app/models';
 import type { RollerCoaster } from '@app/types';
-import { getRandom } from '@app/utils';
+import intersectById, { getRandom } from '@app/utils';
 import { Service } from '@lib/decorators';
 import MiniSearch from "minisearch";
 
@@ -75,19 +75,6 @@ export default class RollerCoasterService {
     return coasters[randomIndex];
   }
 
-  public intersectById<T extends { id: string | number }>(
-    a: T[],
-    b: T[]
-  ): T[] {
-    const ids = new Set(b.map(x => x.id));
-    const ids2 = new Set(a.map(x => x.id));
-    console.log(ids);
-    console.log(ids2);
-    const filtered = a.filter(x => ids.has(x.id));
-    console.log(filtered)
-    return filtered
-  }
-
   public async searchCoasters(
     name: string,
     parkName: string,
@@ -107,7 +94,7 @@ export default class RollerCoasterService {
         fuzzy: 0.2
       });
 
-    const matches = this.intersectById(
+    const matches = intersectById(
       (parkName) ? parkResults : rideResults,
       rideResults
     );

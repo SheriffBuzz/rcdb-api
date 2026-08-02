@@ -22,7 +22,7 @@ export default interface ThemePark {
     to: string;
   };
   mainPicture: Picture | undefined;
-  pictures: Picture[];
+  pictures?: Picture[];
   socialMedia: SocialMedia;
   coords: {
     lat: string;
