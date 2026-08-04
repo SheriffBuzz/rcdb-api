@@ -4,7 +4,7 @@ import { PaginatedResponse } from '@app/models';
 import type { RollerCoaster } from '@app/types';
 import intersectById, { getRandom } from '@app/utils';
 import { Service } from '@lib/decorators';
-import MiniSearch from "minisearch";
+import MiniSearch, { SearchResult } from "minisearch";
 
 @Service()
 export default class RollerCoasterService {
@@ -12,6 +12,7 @@ export default class RollerCoasterService {
   private _coasterIndex?: MiniSearch;
   private _indexedCoasters?: RollerCoaster[];
   private _coasterMap?: Map<String, RollerCoaster>;
+  private _parkToCoasterIds: Map<string, string[]>;
 
   constructor() {
     this._db = JsonDB.getInstance();
@@ -22,6 +23,16 @@ export default class RollerCoasterService {
 
     if (this._coasterIndex && this._indexedCoasters === coasters) {
       return this._coasterIndex;
+    }
+    this._parkToCoasterIds = new Map<string, string[]>();
+    for (const coaster of coasters) {
+      const parkId = String(coaster.park.id);
+      let coasterIds = this._parkToCoasterIds.get(parkId);
+      if (!coasterIds) {
+        coasterIds = [];
+        this._parkToCoasterIds.set(parkId, coasterIds);
+      }
+      coasterIds.push(String(coaster.id));
     }
 
     const miniSearch = new MiniSearch({
@@ -37,7 +48,8 @@ export default class RollerCoasterService {
       coasters.map((coaster) => ({
         id: coaster.id,
         name: coaster.name,
-        parkName: coaster.park.name
+        parkName: coaster.park.name,
+        parkRcdbId: coaster.park.id
       }))
     );
 
@@ -78,6 +90,7 @@ export default class RollerCoasterService {
   public async searchCoasters(
     name: string,
     parkName: string,
+    parkRcdbId: string,
   ): Promise<Omit<RollerCoaster, 'pictures'>[]> {
 
     const index = await this._getCoasterIndex();
@@ -86,21 +99,35 @@ export default class RollerCoasterService {
       .search(name, {
         combineWith: 'AND',
         fuzzy: 0.2
-      });
+      })
+      .map((hit) => String(hit.id));
 
-    const parkResults = index
-      .search(parkName, {
-        combineWith: 'AND',
-        fuzzy: 0.2
-      });
-
-    const matches = intersectById(
-      (parkName) ? parkResults : rideResults,
-      rideResults
-    );
+    let parkResults: string[];
+    if (parkRcdbId) {
+      parkResults = this._parkToCoasterIds.get(parkRcdbId) || [];
+    } else {
+      parkResults = index
+        .search(parkName, {
+          combineWith: 'AND',
+          fuzzy: 0.2
+        })
+        .map((hit) => String(hit.id));
+    }
+    
+    let matches;
+    if (name && (parkName || parkRcdbId)) {
+      matches = intersectById(parkResults, rideResults);
+    } else if (name) {
+      matches = rideResults;
+    } else if (parkName || parkRcdbId) {
+      matches = parkResults;
+    } else {
+      console.log('No Filters given.');
+      return []
+    }
 
     return matches
-      .map((hit) => this._coasterMap!.get(String(hit.id)))
+      .map((id) => this._coasterMap!.get(String(id)))
       .filter((coaster): coaster is RollerCoaster => !!coaster)
       .map(({ pictures, ...coaster }) => coaster);
   }

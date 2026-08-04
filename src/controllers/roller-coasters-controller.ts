@@ -42,11 +42,11 @@ export default class RollerCoastersController {
 
   @Get('/search')
   public async searchCoasterRoute(req: Request, res: Response) {
-    const { name = '', parkName = '' } = req.query;
+    const { name = '', parkName = '', parkRcdbId = ''} = req.query;
 
-    if (!name) res.status(400).json([]);
+    if (!name && !parkName && !parkRcdbId) res.status(400).json([]);
 
-    const matchedCoasters: RollerCoaster[] = await this._rollercoasterService.searchCoasters(name as string, parkName as string);
+    const matchedCoasters: RollerCoaster[] = await this._rollercoasterService.searchCoasters(name as string, parkName as string, parkRcdbId as string);
 
     res.status(200).json({ coasters: matchedCoasters, totalMatch: matchedCoasters.length });
   }
