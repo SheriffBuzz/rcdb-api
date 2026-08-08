@@ -39,7 +39,7 @@ export default interface RollerCoaster {
   country: string;
   link: string;
   make: string;
-  model: string;
+  model: string[];
   type: string;
   design: string;
   stats?: Stats;

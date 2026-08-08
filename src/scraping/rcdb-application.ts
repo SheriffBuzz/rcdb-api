@@ -141,7 +141,7 @@ export default class RcdbScraper extends PaginatedScraper {
           date: operationDates
         },
         make: $('#feature .scroll:nth-of-type(2) a:nth-of-type(1)').text(),
-        model: $('#feature .scroll:nth-of-type(2) a:nth-of-type(2)').text(),
+        model: $('#feature .scroll:nth-of-type(2) a').slice(1).map((_, el) => $(el).text()).get(),
         type: $('#feature ul:nth-of-type(1) > li:nth-of-type(2) a:nth-of-type(1)').text(),
         design: $('#feature ul:nth-of-type(1) > li:nth-of-type(3) a:nth-of-type(1)').text(),
         stats: coasterStats,
