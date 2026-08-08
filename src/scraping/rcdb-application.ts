@@ -59,7 +59,7 @@ export default class RcdbScraper extends PaginatedScraper {
 
         const getValue = (value: Cheerio<Element>) => {
           const values = value.map((i, td) =>
-            ($(td).contents().first().text())
+            ($(td).contents().first().text().split('(')[0].trim()) //Observed the ' (' is for operating date eg Apocalypse (2012 to 2019). This will work assuming all pages only use parentheses.
           ).toArray().map((element) => element.toString())
 
 
