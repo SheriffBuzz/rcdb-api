@@ -30,7 +30,7 @@ export default class JsonDB {
     let dbData: TDataBaseData;
 
     if (Array.isArray(currentDbContent)) {
-      const contentIndex: number = currentDbContent.indexOf(data.id);
+      const contentIndex: number = currentDbContent.findIndex(item => item.id === data.id);
 
       if (contentIndex) {
         currentDbContent[contentIndex] = data;

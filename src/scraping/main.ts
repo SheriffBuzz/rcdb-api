@@ -4,11 +4,12 @@ import type { Regions } from '@scraping/rcdb-application';
 
 program.option('--region <regionName>');
 program.option('--saveData <boolean>');
+program.option('--id <string>');
 
 program.parse();
 
-const { region = 'World', saveData = 'true' } = program.opts<{ region: Regions; saveData: string }>();
+const { region = 'World', saveData = 'true', id = ''} = program.opts<{ region: Regions; saveData: string; id: string }>();
 
 const app = new Application();
 
-app.start({ region, saveData: saveData === 'true' });
+app.start({ region, saveData: saveData === 'true', id});

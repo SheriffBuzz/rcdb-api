@@ -5,6 +5,7 @@ import type {Cheerio, CheerioAPI, Element} from 'cheerio';
 import {load} from 'cheerio';
 import {Presets, SingleBar} from 'cli-progress';
 import PaginatedScraper from './paginated-scraper';
+import config from '@config';
 
 export type Regions = 'Madrid' | 'Europe' | 'Spain' | 'World';
 
@@ -181,7 +182,13 @@ export default class RcdbScraper extends PaginatedScraper {
     return coastersPage;
   }
 
-  public async scrapeCoasters({region}: { region: Regions }) {
+  public async scrapeCoasters({region}: { region: Regions}, id: string) {
+    if (id) {
+      const link = `${config.RCDB_URL}/${id}.htm`;
+      console.log(`Scraping single coaster with id: ${id}`);
+      const rollerCoaster: RollerCoaster = await this._getCoasterDetails(link);
+      return [rollerCoaster];
+    }
     const start = performance.now();
 
     this._coastersUrl += REGION_COASTERS_MAPPER[region];

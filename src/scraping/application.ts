@@ -46,9 +46,24 @@ export default class Application {
       .catch((err: Error) => console.error('💥 Error creating raw coasters database file...', err));
   }
 
-  async start({ region, saveData }: { region: Regions; saveData: boolean }) {
-    const coasters: RollerCoaster[] = await this._rcdbScraper.scrapeCoasters({ region });
+    private async _addRollerCoasters(coasters: RollerCoaster[]): Promise<void> {
+    console.log('💾 Saving raw coasters data to database');
+    coasters.forEach(coaster => {
+      try {
+        this._jsonDb.addToDB(`${__COASTERS_DB_FILENAME__}`, coaster);
+        console.log(`Coaster: ${coaster.id} ${coaster.name} saved.`)
+      } catch (err) {
+        console.error('💥 Error creating raw coasters database file...', err);
+      }
+    });
+  }
 
+  async start({ region, saveData, id}: { region: Regions; saveData: boolean; id: string;}) {
+    const coasters: RollerCoaster[] = await this._rcdbScraper.scrapeCoasters({ region }, id);
+    if (id) {
+      await this._addRollerCoasters(coasters);
+      return;
+    }
     await this._saveRawRollerCoasters(coasters);
 
     if (saveData) {
